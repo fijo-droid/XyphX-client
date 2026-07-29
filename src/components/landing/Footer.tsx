@@ -115,8 +115,11 @@ export default function Footer({ showContact = true }: { showContact?: boolean }
 
         {/* base line */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-line pt-6 md:flex-row">
-          <p className="label-mono text-carbon/40">© 2025 XyphX</p>
-          <p className="label-mono hidden md:block text-carbon/40">One ink · one field · 8pt grid</p>
+          <p className="label-mono text-carbon/40">© 2026 XyphX</p>
+          <div className="flex gap-6">
+            <a href="/privacy" className="label-mono text-carbon/40 hover:text-ink transition-colors">Privacy</a>
+            <a href="/terms" className="label-mono text-carbon/40 hover:text-ink transition-colors">Terms</a>
+          </div>
           <button onClick={scrollToTop} data-cursor="TOP" className="label-mono link-draw text-ink">
             Back to top ↑
           </button>
