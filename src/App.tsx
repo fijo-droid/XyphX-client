@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 
 import AdminDashboard from "./pages/AdminDashboard";
 import Pricing from "./pages/Pricing";
@@ -156,6 +158,14 @@ const NotFoundPage = () => (
   </>
 );
 
+const PrivacyPage = () => (
+  <Privacy />
+);
+
+const TermsPage = () => (
+  <Terms />
+);
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -171,6 +181,8 @@ const App = () => (
           <Route path="/console" element={<ApiPageWrapper />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin" element={<AdminPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
