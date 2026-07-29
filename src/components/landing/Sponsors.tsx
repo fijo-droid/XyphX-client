@@ -5,6 +5,7 @@ interface Sponsor {
   id: string;
   name: string;
   logoUrl: string;
+  websiteUrl?: string;
 }
 
 /**
@@ -32,8 +33,9 @@ const Sponsors: React.FC = () => {
 
   if (sponsors.length === 0) return null;
 
-  // Duplicate the 2 sponsors multiple times to create a seamless continuous marquee loop
-  const duplicated = Array(8).fill(sponsors).flat();
+  // Duplicate the sponsors multiple times to ensure the marquee fills the screen even on ultrawide monitors
+  // and creates a seamless loop when translated by -50%.
+  const duplicated = Array(30).fill(sponsors).flat();
 
   return (
     <section className="relative z-10 py-24 overflow-hidden">
@@ -49,11 +51,21 @@ const Sponsors: React.FC = () => {
             <div className="flex w-max animate-marquee items-center whitespace-nowrap">
               {duplicated.map((s, i) => (
                 <span key={`${s.id}-${i}`} className="group mx-2 flex items-center">
-                  <img
-                    src={s.logoUrl}
-                    alt={s.name}
-                    className="h-8 md:h-12 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
-                  />
+                  {s.websiteUrl ? (
+                    <a href={s.websiteUrl} target="_blank" rel="noopener noreferrer" className="cursor-pointer">
+                      <img
+                        src={s.logoUrl}
+                        alt={s.name}
+                        className="h-8 md:h-12 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      src={s.logoUrl}
+                      alt={s.name}
+                      className="h-8 md:h-12 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                    />
+                  )}
                   <span className="mx-12 font-mono text-ink/30" aria-hidden>
                     +
                   </span>
