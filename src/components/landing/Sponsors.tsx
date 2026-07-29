@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import Reveal from "@/components/motion/Reveal";
 
 interface Sponsor {
@@ -48,7 +49,11 @@ const Sponsors: React.FC = () => {
       <Reveal amount={0.4} blur={false} delay={0.1}>
         <div className="-rotate-[1.5deg]" style={{ width: '120vw', marginLeft: '-10vw' }}>
           <div className="pause-on-hover border-y border-line bg-paper py-8 overflow-hidden">
-            <div className="flex w-max animate-marquee items-center whitespace-nowrap">
+            <motion.div 
+              className="flex w-max items-center whitespace-nowrap"
+              animate={{ x: ["0%", "-50%"] }}
+              transition={{ repeat: Infinity, ease: "linear", duration: 30 }}
+            >
               {duplicated.map((s, i) => (
                 <span key={`${s.id}-${i}`} className="group mx-2 flex items-center">
                   {s.websiteUrl ? (
@@ -71,7 +76,7 @@ const Sponsors: React.FC = () => {
                   </span>
                 </span>
               ))}
-            </div>
+            </motion.div>
           </div>
         </div>
       </Reveal>
