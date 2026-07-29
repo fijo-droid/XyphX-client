@@ -13,7 +13,7 @@ export default function Privacy() {
         description="XyphX Privacy Statement and data processing agreements."
         canonicalPath="/privacy"
       />
-      <div className="relative min-h-screen bg-[#060606] text-white selection:bg-[#5E1EE5] selection:text-white font-sans overflow-hidden">
+      <div className="relative min-h-screen bg-background text-foreground overflow-x-clip font-sans">
         <Background />
         <Navbar />
 
@@ -24,20 +24,20 @@ export default function Privacy() {
                 Privacy <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#5E1EE5]">Statement</span>
               </h1>
               
-              <div className="prose prose-invert prose-purple max-w-none text-gray-300">
+              <div className="prose max-w-none text-carbon">
                 <p className="text-lg mb-6">Last updated: July 2026</p>
                 
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">1. Information We Collect</h2>
+                <h2 className="text-2xl font-semibold text-black mt-8 mb-4">1. Information We Collect</h2>
                 <p className="mb-4">
                   When you use XyphX, we collect information you provide directly to us, such as when you create an account, authenticate via OAuth (Google, Microsoft, Yahoo), or use our APIs.
                 </p>
 
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">2. How We Use Your Data</h2>
+                <h2 className="text-2xl font-semibold text-black mt-8 mb-4">2. How We Use Your Data</h2>
                 <p className="mb-4">
                   We use the information we collect to provide, maintain, and improve our services. We do not sell your personal data to third parties.
                 </p>
 
-                <h2 className="text-2xl font-semibold text-white mt-8 mb-4">3. Data Security</h2>
+                <h2 className="text-2xl font-semibold text-black mt-8 mb-4">3. Data Security</h2>
                 <p className="mb-4">
                   We implement industry-standard security measures to protect your data, but please remember that no method of transmission over the Internet is 100% secure.
                 </p>
