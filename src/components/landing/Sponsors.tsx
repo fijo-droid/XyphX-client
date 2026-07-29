@@ -46,7 +46,7 @@ const Sponsors: React.FC = () => {
       </Reveal>
 
       <Reveal amount={0.4} blur={false} delay={0.1}>
-        <div className="-mx-8 -rotate-[1.5deg]">
+        <div className="w-[120vw] -ml-[10vw] -rotate-[1.5deg]">
           <div className="pause-on-hover border-y border-line bg-paper py-8 overflow-hidden">
             <div className="flex w-max animate-marquee items-center whitespace-nowrap">
               {duplicated.map((s, i) => (
