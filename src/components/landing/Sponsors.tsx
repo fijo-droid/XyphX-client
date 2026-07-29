@@ -56,14 +56,14 @@ const Sponsors: React.FC = () => {
                       <img
                         src={s.logoUrl}
                         alt={s.name}
-                        className="h-8 md:h-12 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                        className="h-16 md:h-20 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
                       />
                     </a>
                   ) : (
                     <img
                       src={s.logoUrl}
                       alt={s.name}
-                      className="h-8 md:h-12 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                      className="h-16 md:h-20 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
                     />
                   )}
                   <span className="mx-12 font-mono text-ink/30" aria-hidden>
