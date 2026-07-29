@@ -35,7 +35,7 @@ const Sponsors: React.FC = () => {
 
   // Duplicate the sponsors multiple times to ensure the marquee fills the screen even on ultrawide monitors
   // and creates a seamless loop when translated by -50%.
-  const duplicated = Array(30).fill(sponsors).flat();
+  const duplicated = Array.from({ length: 40 }).flatMap(() => sponsors);
 
   return (
     <section className="relative z-10 py-24 overflow-hidden">
@@ -46,7 +46,7 @@ const Sponsors: React.FC = () => {
       </Reveal>
 
       <Reveal amount={0.4} blur={false} delay={0.1}>
-        <div className="w-[120vw] -ml-[10vw] -rotate-[1.5deg]">
+        <div className="-rotate-[1.5deg]" style={{ width: '120vw', marginLeft: '-10vw' }}>
           <div className="pause-on-hover border-y border-line bg-paper py-8 overflow-hidden">
             <div className="flex w-max animate-marquee items-center whitespace-nowrap">
               {duplicated.map((s, i) => (
@@ -56,14 +56,14 @@ const Sponsors: React.FC = () => {
                       <img
                         src={s.logoUrl}
                         alt={s.name}
-                        className="h-16 md:h-20 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                        className="h-24 md:h-32 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
                       />
                     </a>
                   ) : (
                     <img
                       src={s.logoUrl}
                       alt={s.name}
-                      className="h-16 md:h-20 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
+                      className="h-24 md:h-32 w-auto object-contain opacity-90 transition-all duration-300 group-hover:opacity-100"
                     />
                   )}
                   <span className="mx-12 font-mono text-ink/30" aria-hidden>
