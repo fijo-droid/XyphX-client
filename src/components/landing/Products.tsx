@@ -90,13 +90,15 @@ export default function Products() {
                   />
 
                   <div className="relative flex flex-col gap-4 px-6 py-8 md:grid md:grid-cols-[6rem_1fr_2fr_auto] md:items-baseline md:gap-x-10 md:px-8 md:py-10">
-                    <span className="label-mono text-ink/70 transition-colors duration-500 group-hover:text-white/70">
-                      P—0{product.rank}
-                    </span>
+                    <div className="flex items-baseline justify-between gap-4 md:contents">
+                      <span className="label-mono shrink-0 text-ink/70 transition-colors duration-500 group-hover:text-white/70">
+                        P—0{product.rank}
+                      </span>
 
-                    <span className="font-display text-4xl md:text-5xl font-bold tracking-tight text-carbon transition-all duration-500 group-hover:text-white md:group-hover:translate-x-3">
-                      {product.name}
-                    </span>
+                      <span className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-carbon text-right md:text-left transition-all duration-500 group-hover:text-white md:group-hover:translate-x-3">
+                        {product.name}
+                      </span>
+                    </div>
 
                     <span className="max-w-xl text-sm md:text-base leading-relaxed text-carbon/55 transition-colors duration-500 group-hover:text-white/75">
                       {product.description}
