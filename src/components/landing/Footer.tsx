@@ -3,6 +3,7 @@ import Reveal from "@/components/motion/Reveal";
 import Magnetic from "@/components/motion/Magnetic";
 import { scrollToTop } from "@/lib/scroll";
 import { Linkedin, Github } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const social = [
   { label: "LinkedIn", href: "https://www.linkedin.com/company/xyphx" },
@@ -10,6 +11,20 @@ const social = [
 ];
 
 export default function Footer({ showContact = true }: { showContact?: boolean }) {
+  const { toast } = useToast();
+
+  const handleEmailClick = (e: React.MouseEvent<HTMLAnchorElement>, email: string) => {
+    e.preventDefault();
+    navigator.clipboard.writeText(email);
+    toast({
+      title: "Email copied to clipboard!",
+      description: email,
+    });
+    setTimeout(() => {
+      window.location.href = `mailto:${email}`;
+    }, 300);
+  };
+
   return (
     <footer id={showContact ? "contact" : undefined} className="relative z-10 px-6 md:px-10 pt-32 pb-8 overflow-hidden">
       <div className="mx-auto max-w-[96rem]">
@@ -32,6 +47,7 @@ export default function Footer({ showContact = true }: { showContact?: boolean }
               </p>
               <a
                 href="mailto:info@xyphx.com"
+                onClick={(e) => handleEmailClick(e, "info@xyphx.com")}
                 data-cursor="WRITE"
                 className="group inline-flex items-baseline gap-2 mt-2 self-start"
               >
@@ -53,6 +69,7 @@ export default function Footer({ showContact = true }: { showContact?: boolean }
               </p>
               <a
                 href="mailto:support@xyphx.com"
+                onClick={(e) => handleEmailClick(e, "support@xyphx.com")}
                 data-cursor="WRITE"
                 className="group inline-flex items-baseline gap-2 mt-2 self-start"
               >

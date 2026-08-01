@@ -89,20 +89,22 @@ export default function Products() {
                     className="absolute inset-0 origin-top scale-y-0 bg-ink transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:scale-y-100"
                   />
 
-                  <div className="relative grid grid-cols-[auto_1fr_auto] items-baseline gap-x-6 gap-y-2 px-6 py-8 md:grid-cols-[6rem_1fr_2fr_auto] md:gap-x-10 md:px-8 md:py-10">
-                    <span className="label-mono text-ink/70 transition-colors duration-500 group-hover:text-white/70">
-                      P—0{product.rank}
-                    </span>
+                  <div className="relative flex flex-col gap-4 px-6 py-8 md:grid md:grid-cols-[6rem_1fr_2fr_auto] md:items-baseline md:gap-x-10 md:px-8 md:py-10">
+                    <div className="flex items-baseline justify-between gap-4 md:contents">
+                      <span className="label-mono shrink-0 text-ink/70 transition-colors duration-500 group-hover:text-white/70">
+                        P—0{product.rank}
+                      </span>
 
-                    <span className="font-display text-3xl md:text-5xl font-bold tracking-tight text-carbon transition-all duration-500 group-hover:text-white group-hover:translate-x-3">
-                      {product.name}
-                    </span>
+                      <span className="font-display text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-carbon text-right md:text-left transition-all duration-500 group-hover:text-white md:group-hover:translate-x-3">
+                        {product.name}
+                      </span>
+                    </div>
 
-                    <span className="col-span-full md:col-span-1 max-w-xl text-sm md:text-base leading-relaxed text-carbon/55 transition-colors duration-500 group-hover:text-white/75">
+                    <span className="max-w-xl text-sm md:text-base leading-relaxed text-carbon/55 transition-colors duration-500 group-hover:text-white/75">
                       {product.description}
                     </span>
 
-                    <span className="flex items-center gap-4 justify-self-end">
+                    <span className="flex items-center gap-4 mt-2 md:mt-0 md:justify-self-end">
                       <span className="label-mono border border-line px-3 py-1.5 text-carbon/60 transition-colors duration-500 group-hover:border-white/40 group-hover:text-white">
                         {product.status}
                       </span>
