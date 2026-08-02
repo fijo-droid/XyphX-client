@@ -1,3 +1,5 @@
+let cachedGeo: any = null;
+
 export const trackEvent = async (eventName: string, properties: Record<string, any> = {}) => {
   try {
     // Generate or retrieve Visitor ID
@@ -14,12 +16,48 @@ export const trackEvent = async (eventName: string, properties: Record<string, a
       sessionStorage.setItem('xyphx_session_id', sessionId);
     }
 
+    // Attempt to fetch Geo data if not cached
+    if (!cachedGeo) {
+      try {
+        const geoResponse = await fetch('https://get.geojs.io/v1/ip/geo.json', { cache: 'force-cache' });
+        if (geoResponse.ok) {
+          cachedGeo = await geoResponse.json();
+        }
+      } catch (e) {
+        console.warn('Could not fetch geo data');
+      }
+    }
+
+    // Gather Device Data
+    const device = {
+      browser: getBrowser(),
+      os: getOS(),
+      screenResolution: `${window.screen.width}x${window.screen.height}`,
+      language: navigator.language,
+      connection: (navigator as any).connection ? (navigator as any).connection.effectiveType : 'unknown'
+    };
+
+    // Gather Performance Data (basic)
+    let performance = {};
+    if (window.performance && window.performance.timing) {
+      const t = window.performance.timing;
+      performance = {
+        pageLoadTimeMs: t.loadEventEnd > 0 ? t.loadEventEnd - t.navigationStart : null,
+        domReadyTimeMs: t.domContentLoadedEventEnd > 0 ? t.domContentLoadedEventEnd - t.navigationStart : null
+      };
+    }
+
     const payload = {
       eventName,
       visitorId,
       sessionId,
-      deviceBrowser: getBrowser(),
-      deviceOs: getOS(),
+      deviceBrowser: device.browser,
+      deviceOs: device.os,
+      geoCountry: cachedGeo?.country || 'Unknown',
+      geoCity: cachedGeo?.city || 'Unknown',
+      geo: cachedGeo || {},
+      device,
+      performance,
       properties: {
         ...properties,
         url: window.location.href,

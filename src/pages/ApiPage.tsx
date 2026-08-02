@@ -624,7 +624,14 @@ export default function ApiPage() {
 
                   {/* Connected Auth Providers (Full X-Axis Width) */}
                   <div className="space-y-3 mb-8 pb-8 border-b border-line-soft w-full">
-                    {['Google', 'Microsoft', 'Yahoo'].map(provider => {
+                    {['Google', 'Microsoft', 'Yahoo']
+                      .sort((a, b) => {
+                        const aConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(a.toLowerCase());
+                        const bConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(b.toLowerCase());
+                        if (aConnected === bConnected) return a.localeCompare(b);
+                        return aConnected ? -1 : 1;
+                      })
+                      .map(provider => {
                       const isConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(provider.toLowerCase());
                       return (
                         <div key={provider} className="flex items-center justify-between p-3.5 rounded-xl border border-line-soft bg-paper/50 w-full">
