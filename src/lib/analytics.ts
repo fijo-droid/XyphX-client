@@ -28,7 +28,8 @@ export const trackEvent = async (eventName: string, properties: Record<string, a
       }
     };
 
-    const endpoint = import.meta.env.VITE_ANALYTICS_URL || 'https://admin.xyphx.com/api/public/analytics/track';
+    const apiUrl = import.meta.env.VITE_API_URL || 'https://admin.xyphx.com';
+    const endpoint = `${apiUrl}/api/public/analytics/track`;
 
     await fetch(endpoint, {
       method: 'POST',
