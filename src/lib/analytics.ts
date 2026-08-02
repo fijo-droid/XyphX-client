@@ -28,11 +28,7 @@ export const trackEvent = async (eventName: string, properties: Record<string, a
       }
     };
 
-    // Replace with the actual endpoint, assuming admin.xyphx.com is running locally on some port or deployed
-    // In a real environment, you'd use import.meta.env.VITE_ANALYTICS_URL
-    const endpoint = window.location.hostname.includes('localhost') 
-      ? 'http://localhost:8080/api/public/analytics/track' 
-      : 'https://admin.xyphx.com/api/public/analytics/track';
+    const endpoint = import.meta.env.VITE_ANALYTICS_URL || 'https://admin.xyphx.com/api/public/analytics/track';
 
     await fetch(endpoint, {
       method: 'POST',
