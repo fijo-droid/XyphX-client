@@ -42,7 +42,7 @@ export const api = {
     let response = await fetch(url, config);
 
     // Global interceptor logic for 401 Unauthorized
-    if (response.status === 401 && !isRetry && !endpoint.includes('/api/auth/')) {
+    if (response.status === 401 && !isRetry && !endpoint.includes('/api/auth/') && !endpoint.includes('/api/users/me')) {
       // Attempt refresh token
       try {
         const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {

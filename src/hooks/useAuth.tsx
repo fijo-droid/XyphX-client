@@ -76,7 +76,6 @@ export const useAuth = () => {
       console.error("Logout failed:", error);
     } finally {
       setLocalLoading(false);
-      window.location.href = '/login';
     }
   };
 
