@@ -98,7 +98,7 @@ export default function Navbar() {
             aria-label="Back to top"
             data-cursor="TOP"
           >
-            <img src="/nav-logo.png" alt="XyphX" className="h-7 w-auto object-contain" />
+            <img src="/nav-logo.png" alt="XyphX" className="h-12 w-auto object-contain" />
           </button>
 
           {/* desktop index */}
