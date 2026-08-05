@@ -21,7 +21,7 @@ export default function Privacy() {
           <div className="container mx-auto px-6 max-w-4xl">
             <Reveal>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
-                Privacy <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#5E1EE5]">Statement</span>
+                Privacy <span className="text-ink">Statement</span>
               </h1>
               
               <div className="prose max-w-none text-carbon">

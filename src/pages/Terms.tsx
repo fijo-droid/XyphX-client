@@ -21,7 +21,7 @@ export default function Terms() {
           <div className="container mx-auto px-6 max-w-4xl">
             <Reveal>
               <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-8">
-                Terms of <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-[#5E1EE5]">Service</span>
+                Terms of <span className="text-ink">Service</span>
               </h1>
               
               <div className="prose max-w-none text-carbon">
