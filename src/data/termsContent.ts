@@ -220,7 +220,7 @@ export const termsSections: LegalSection[] = [
     title: "28. Contact Information",
     content: [
       "In order to resolve a complaint regarding the Services or to receive further information regarding use of the Services, please contact us at:",
-      "Email: legal@xyphx.com"
+      "Email: info@xyphx.com"
     ]
   }
 ];

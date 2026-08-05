@@ -160,7 +160,7 @@ export const privacySections: LegalSection[] = [
     title: "18. Contact Information",
     content: [
       "If you have any questions, concerns, or requests regarding this Privacy Policy or our data processing practices, please contact our Data Protection Officer and legal team.",
-      "Email: privacy@xyphx.com"
+      "Email: info@xyphx.com"
     ]
   }
 ];
