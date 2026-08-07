@@ -126,12 +126,27 @@ export default function Navbar() {
                 </button>
               )
             )}
-            <button
-              onClick={handleActionClickBtn}
-              className="label-mono rounded-full border border-carbon/20 px-5 py-2.5 text-carbon transition-all duration-300 hover:border-ink hover:bg-ink hover:text-white"
-            >
-              {actionLabel}
-            </button>
+            {user && location.pathname !== "/console" ? (
+              <button
+                onClick={() => navigate("/console")}
+                className="h-10 w-10 rounded-full border-[2px] border-ink overflow-hidden transition-transform duration-300 hover:scale-105 shrink-0"
+              >
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || "Profile"} className="h-full w-full object-cover" />
+                ) : (
+                  <div className="h-full w-full bg-ink/10 flex items-center justify-center text-ink font-medium text-sm">
+                    {(user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
+                  </div>
+                )}
+              </button>
+            ) : (
+              <button
+                onClick={handleActionClickBtn}
+                className="label-mono rounded-full border border-carbon/20 px-5 py-2.5 text-carbon transition-all duration-300 hover:border-ink hover:bg-ink hover:text-white shrink-0 whitespace-nowrap"
+              >
+                {actionLabel}
+              </button>
+            )}
           </div>
 
           {/* mobile toggle — two lines that become × */}
@@ -194,12 +209,28 @@ export default function Navbar() {
                 )}
               </motion.div>
             ))}
-            <button
-              onClick={handleActionClickBtn}
-              className="mt-8 rounded-full bg-ink px-6 py-4 font-display font-medium text-white"
-            >
-              {actionLabel}
-            </button>
+            {user && location.pathname !== "/console" ? (
+              <button
+                onClick={() => { setOpen(false); navigate("/console"); }}
+                className="mt-8 flex items-center justify-center gap-3 rounded-full bg-ink px-6 py-4 font-display font-medium text-white"
+              >
+                {user.photoURL ? (
+                  <img src={user.photoURL} alt={user.displayName || "Profile"} className="h-8 w-8 rounded-full object-cover border border-white/20" />
+                ) : (
+                  <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center text-white font-medium text-sm">
+                    {(user.displayName?.[0] || user.email?.[0] || "U").toUpperCase()}
+                  </div>
+                )}
+                <span>Console</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleActionClickBtn}
+                className="mt-8 rounded-full bg-ink px-6 py-4 font-display font-medium text-white"
+              >
+                {actionLabel}
+              </button>
+            )}
             <p className="label-mono mt-auto mb-8 text-carbon/40">XYPHX — Engineering the Future of Tech</p>
           </motion.div>
         )}
