@@ -6,11 +6,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 const links: Array<{ label: string; id?: string; path?: string; href?: string }> = [
   { label: "Products", id: "products", path: "/" },
+  { label: "Team", id: "team", path: "/" },
   { label: "Pricing", path: "/pricing" },
   { label: "API", path: "/console" },
   { label: "Contact", id: "contact", path: "/" },
   { label: "Careers", href: "https://careers.xyphx.com" },
 ];
+
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);

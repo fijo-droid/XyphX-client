@@ -9,6 +9,7 @@ import Vision from "@/components/landing/Vision";
 import Roadmap from "@/components/landing/Roadmap";
 import Sponsors from "@/components/landing/Sponsors";
 import Products from "@/components/landing/Products";
+import Team from "@/components/landing/Team";
 import Footer from "@/components/landing/Footer";
 import Background from "@/components/landing/Background";
 
@@ -57,10 +58,12 @@ const Index = () => {
         <Vision />
         <Roadmap />
         <Services />
+        <Team />
       </main>
       <Footer />
     </div>
   );
 };
+
 
 export default Index;

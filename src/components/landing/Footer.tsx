@@ -32,7 +32,7 @@ export default function Footer({ showContact = true }: { showContact?: boolean }
         {showContact && (
         <div className="contact-section">
           <Reveal blur={false}>
-          <p className="label-mono mb-8 text-ink">06 — Contact</p>
+          <p className="label-mono mb-8 text-ink">07 — Contact</p>
           <h2 className="max-w-4xl font-display text-4xl md:text-6xl font-bold uppercase leading-[1.02] tracking-[-0.02em] text-carbon">
             Let's build the future together<span className="text-ink">.</span>
           </h2>

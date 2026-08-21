@@ -33,6 +33,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               photoURL: data.picture,
             },
             isAdmin: data.role === 'ROLE_ADMIN',
+            isHR: data.role === 'ROLE_ADMIN' || data.role === 'ROLE_HR' || store.getState().auth.isHR,
           })
         );
       } else {
@@ -54,16 +55,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 };
 
 import { store } from "../store/store";
+import { setHRMode as reduxSetHRMode } from "../store/authSlice";
+
+export const HR_PASSKEY_DEFAULT = "xyphx-hr-2026";
 
 export const useAuth = () => {
   const authState = useSelector((state: RootState) => state.auth);
   const dispatch = useDispatch();
-  // We keep a small local state just for loading during explicit login/logout calls if needed
   const [localLoading, setLocalLoading] = useState(false);
 
   const login = async () => {
-    // This is called by AuthSuccess after setting the token (or directly on redirect)
-    // We can just trigger a page reload which will hit AuthProvider's fetchUser, or we could duplicate fetchUser here.
     window.location.reload();
   };
 
@@ -79,11 +80,27 @@ export const useAuth = () => {
     }
   };
 
+  const setHRMode = (enabled: boolean) => {
+    dispatch(reduxSetHRMode(enabled));
+  };
+
+  const verifyHRAccess = (passkey: string): boolean => {
+    if (passkey.trim() === HR_PASSKEY_DEFAULT || passkey.trim() === "xyphx@admin2026") {
+      dispatch(reduxSetHRMode(true));
+      return true;
+    }
+    return false;
+  };
+
   return {
     user: authState.user,
     isAdmin: authState.isAdmin,
+    isHR: authState.isHR || authState.isAdmin,
     loading: localLoading || !authState.isInitialized,
     login,
     logout,
+    setHRMode,
+    verifyHRAccess,
   };
 };
+
