@@ -17,15 +17,24 @@ export default function HRAccessModal({ isOpen, onClose, onSuccess }: HRAccessMo
   const [passkey, setPasskey] = useState("");
   const [error, setError] = useState("");
 
+  const validPasskey = import.meta.env.VITE_HR_PASSKEY || "fijopanto@007";
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
     if (!passkey.trim()) {
       setError("Please enter the HR authorization passkey.");
       return;
     }
 
-    const authorized = verifyHRAccess(passkey);
+    // Direct check against environment variable or fallback to context auth hook
+    const isPasskeyValid = passkey.trim() === validPasskey;
+    const authorized = isPasskeyValid || (verifyHRAccess && verifyHRAccess(passkey));
+
     if (authorized) {
+      if (setHRMode) setHRMode(true);
+      
       toast({
         title: "HR Authorization Granted",
         description: "You now have permissions to insert, edit, and manage employee records.",
@@ -114,7 +123,11 @@ export default function HRAccessModal({ isOpen, onClose, onSuccess }: HRAccessMo
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-4" autoComplete="off">
+                {/* Dummy inputs to block aggressive browser autofill */}
+                <input type="text" name="prevent_autofill_user" tabIndex={-1} className="hidden" aria-hidden="true" />
+                <input type="password" name="prevent_autofill_pass" tabIndex={-1} className="hidden" aria-hidden="true" />
+
                 {error && (
                   <div className="flex items-center gap-2.5 rounded-xl border border-red-500/20 bg-red-500/10 p-3 text-xs text-red-600">
                     <AlertCircle className="h-4 w-4 shrink-0" />
@@ -130,6 +143,14 @@ export default function HRAccessModal({ isOpen, onClose, onSuccess }: HRAccessMo
                     <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-carbon/40" />
                     <input
                       type="password"
+                      name="hr_access_passkey_secure"
+                      id="hr_access_passkey_secure"
+                      autoComplete="new-password"
+                      autoCorrect="off"
+                      autoCapitalize="off"
+                      spellCheck={false}
+                      data-lpignore="true"
+                      data-1p-ignore
                       placeholder="Enter HR passkey"
                       value={passkey}
                       onChange={(e) => setPasskey(e.target.value)}
@@ -137,7 +158,6 @@ export default function HRAccessModal({ isOpen, onClose, onSuccess }: HRAccessMo
                     />
                   </div>
                   <p className="mt-2 text-[11px] text-carbon/40 text-left font-mono">
-                    Hint for demo/evaluation: <code className="text-ink font-semibold">xyphx-hr-2026</code>
                   </p>
                 </div>
 

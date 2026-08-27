@@ -88,7 +88,7 @@ export function MeetOurTeam() {
                     <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-carbon/40" />
                     <input
                         type="text"
-                        placeholder="Search by name, role, or department..."
+                        placeholder="Search by name, role, or skills"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         className="w-full rounded-xl border border-line bg-paper pl-10 pr-4 py-2.5 text-sm text-carbon focus:border-ink focus:outline-none transition-all"

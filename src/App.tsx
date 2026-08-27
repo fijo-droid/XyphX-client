@@ -21,6 +21,9 @@ import { Navigate } from "react-router-dom";
 import CustomCursor from "@/components/motion/CustomCursor";
 import ScrollToTop from "./components/ScrollToTop";
 
+// Import your Employee Directory component
+import { EmployeeDirectory } from "./components/EmployeeDirectory";
+
 const queryClient = new QueryClient();
 
 const homeSchema = [
@@ -135,7 +138,7 @@ const AdminPage = () => {
   useEffect(() => {
     window.location.replace("https://admin.xyphx.com");
   }, []);
-  
+
   return (
     <SeoHead
       title="Admin Portal | XyphX"
@@ -145,6 +148,17 @@ const AdminPage = () => {
     />
   );
 };
+
+const EmployeesPage = () => (
+  <>
+    <SeoHead
+      title="Our Team | XyphX"
+      description="Meet the engineering team, leadership, and specialists at XyphX."
+      canonicalPath="/employees"
+    />
+    <EmployeeDirectory />
+  </>
+);
 
 const NotFoundPage = () => (
   <>
@@ -170,22 +184,23 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
       <ToastProvider>
-      <CustomCursor />
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <ScrollToTop />
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/pricing" element={<PricingPage />} />
-          <Route path="/console" element={<ApiPageWrapper />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/admin" element={<AdminPage />} />
-          <Route path="/terms" element={<TermsPage />} />
-          <Route path="/privacy" element={<PrivacyPage />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
+        <CustomCursor />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <ScrollToTop />
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/pricing" element={<PricingPage />} />
+            <Route path="/console" element={<ApiPageWrapper />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/admin" element={<AdminPage />} />
+            <Route path="/employees" element={<EmployeesPage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            <Route path="/privacy" element={<PrivacyPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
       </ToastProvider>
     </TooltipProvider>
   </QueryClientProvider>

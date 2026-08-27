@@ -4,7 +4,7 @@ import Background from "@/components/landing/Background";
 import Footer from "@/components/landing/Footer";
 import Reveal from "@/components/motion/Reveal";
 import { AnimatePresence, motion } from "framer-motion";
-import { Key, Copy, Check, Trash2, Shield, Eye, EyeOff, Lock, AlertCircle, X, ChevronDown, User, Activity, Mail, LogOut } from "lucide-react";
+import { Key, Copy, Check, Trash2, Eye, EyeOff, Lock, AlertCircle, X, ChevronDown, User, Activity, Mail } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { api } from "@/lib/api";
 
@@ -39,18 +39,18 @@ export default function ApiPage() {
   const [newKeyName, setNewKeyName] = useState("");
   const [newKeyPassword, setNewKeyPassword] = useState("");
   const [newKeyProduct, setNewKeyProduct] = useState("");
-  const [products, setProducts] = useState<{id: string, name: string}[]>([]);
+  const [products, setProducts] = useState<{ id: string; name: string }[]>([]);
   const [copiedKeyId, setCopiedKeyId] = useState<string | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [sendingEmailKeyId, setSendingEmailKeyId] = useState<string | null>(null);
   const [sentEmailKeyId, setSentEmailKeyId] = useState<string | null>(null);
-  
+
   const [error, setError] = useState("");
 
   const [actionModal, setActionModal] = useState<{
     isOpen: boolean;
-    actionType: 'view' | 'copy' | 'delete' | null;
+    actionType: "view" | "copy" | "delete" | null;
     keyId: string | null;
   }>({ isOpen: false, actionType: null, keyId: null });
   const [passwordInput, setPasswordInput] = useState("");
@@ -70,7 +70,7 @@ export default function ApiPage() {
 
   const fetchProducts = async () => {
     try {
-      const res = await api.get('/api/public/products?apiKeyOnly=true');
+      const res = await api.get("/api/public/products?apiKeyOnly=true");
       if (res.ok) {
         const data = await res.json();
         const validProducts = data.filter((p: any) => p.apiKey !== false);
@@ -86,7 +86,7 @@ export default function ApiPage() {
 
   const fetchProfile = async () => {
     try {
-      const res = await api.get('/api/users/me');
+      const res = await api.get("/api/users/me");
       if (res.ok) setProfile(await res.json());
     } catch (e) {
       console.error(e);
@@ -95,7 +95,7 @@ export default function ApiPage() {
 
   const fetchKeys = async () => {
     try {
-      const res = await api.get('/api/apikeys');
+      const res = await api.get("/api/apikeys");
       if (res.ok) {
         const data = await res.json();
         setKeys(data.map((k: any) => ({ ...k, visible: false })));
@@ -117,10 +117,13 @@ export default function ApiPage() {
     }
 
     try {
-      const res = await api.post('/api/apikeys', {
-        label: newKeyName,
-        productId: newKeyProduct,
-        pin: newKeyPassword
+      const res = await api.post("/api/apikeys", {
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          label: newKeyName,
+          productId: newKeyProduct,
+          pin: newKeyPassword,
+        }),
       });
 
       if (res.ok) {
@@ -139,16 +142,16 @@ export default function ApiPage() {
     }
   };
 
-  const handleActionClick = async (id: string, actionType: 'view' | 'copy' | 'delete') => {
-    const keyItem = keys.find(k => k.id === id);
+  const handleActionClick = async (id: string, actionType: "view" | "copy" | "delete") => {
+    const keyItem = keys.find((k) => k.id === id);
     if (!keyItem) return;
 
-    if (actionType === 'view' && keyItem.visible) {
-      setKeys(keys.map(k => k.id === id ? { ...k, visible: false, keyValueFull: undefined } : k));
+    if (actionType === "view" && keyItem.visible) {
+      setKeys(keys.map((k) => (k.id === id ? { ...k, visible: false, keyValueFull: undefined } : k)));
       return;
     }
 
-    if (actionType === 'delete') {
+    if (actionType === "delete") {
       setActionModal({ isOpen: true, actionType, keyId: id });
       setPasswordInput("");
       setModalError("");
@@ -159,9 +162,9 @@ export default function ApiPage() {
       const res = await api.get(`/api/apikeys/${id}/view`);
       if (res.ok) {
         const fullKey = await res.text();
-        if (actionType === 'view') {
-          setKeys(keys.map(k => k.id === id ? { ...k, visible: true, keyValueFull: fullKey } : k));
-        } else if (actionType === 'copy') {
+        if (actionType === "view") {
+          setKeys(keys.map((k) => (k.id === id ? { ...k, visible: true, keyValueFull: fullKey } : k)));
+        } else if (actionType === "copy") {
           navigator.clipboard.writeText(fullKey);
           setCopiedKeyId(id);
           setTimeout(() => setCopiedKeyId(null), 2000);
@@ -188,7 +191,9 @@ export default function ApiPage() {
     setSendingEmailKeyId(keyId);
 
     try {
-      const res = await api.post(`/api/apikeys/${keyId}/send-password`);
+      const res = await api.post(`/api/apikeys/${keyId}/send-password`, {
+        headers: { "Content-Type": "application/json" },
+      });
       if (res.ok) {
         setSentEmailKeyId(keyId);
         setTimeout(() => setSentEmailKeyId(null), 3000);
@@ -207,10 +212,10 @@ export default function ApiPage() {
     setModalError("");
 
     try {
-      if (actionType === 'delete') {
+      if (actionType === "delete") {
         const res = await api.delete(`/api/apikeys/${keyId}`, {
           body: JSON.stringify({ pin: passwordInput }),
-          headers: { 'Content-Type': 'application/json' }
+          headers: { "Content-Type": "application/json" },
         });
         if (res.ok) {
           setKeys(keys.filter((k) => k.id !== keyId));
@@ -230,8 +235,8 @@ export default function ApiPage() {
     setModalError("");
   };
 
-  const calculatePercentage = (used: number, limit: number) => {
-    if (!limit) return 0;
+  const calculatePercentage = (used?: number, limit?: number) => {
+    if (!limit || !used) return 0;
     return Math.min(100, Math.round((used / limit) * 100));
   };
 
@@ -244,7 +249,7 @@ export default function ApiPage() {
       <AnimatePresence>
         {emailConfirmModal.isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -252,15 +257,15 @@ export default function ApiPage() {
               className="absolute inset-0 bg-background/80"
               onClick={() => setEmailConfirmModal({ isOpen: false, keyId: null, keyLabel: null })}
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="bg-paper border border-line-soft rounded-2xl p-6 max-w-sm w-full shadow-xl relative z-10 will-change-transform"
             >
-              <button 
-                onClick={() => setEmailConfirmModal({ isOpen: false, keyId: null, keyLabel: null })} 
+              <button
+                onClick={() => setEmailConfirmModal({ isOpen: false, keyId: null, keyLabel: null })}
                 className="absolute top-4 right-4 text-carbon/40 hover:text-carbon transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -307,7 +312,7 @@ export default function ApiPage() {
       <AnimatePresence>
         {actionModal.isOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -315,7 +320,7 @@ export default function ApiPage() {
               className="absolute inset-0 bg-background/80"
               onClick={closeModal}
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
@@ -323,45 +328,45 @@ export default function ApiPage() {
               className="bg-paper border border-line-soft rounded-2xl p-6 max-w-sm w-full shadow-xl relative z-10 will-change-transform"
             >
               <button onClick={closeModal} className="absolute top-4 right-4 text-carbon/40 hover:text-carbon transition-colors">
-              <X className="w-5 h-5" />
-            </button>
-            <div className="mb-6 text-center mt-2">
-              <div className="mx-auto w-12 h-12 bg-ink/10 rounded-full flex items-center justify-center mb-4">
-                <Lock className="w-6 h-6 text-ink" />
-              </div>
-              <h3 className="text-xl font-display font-bold text-carbon mb-2 capitalize">
-                Authenticate to {actionModal.actionType}
-              </h3>
-              <p className="text-sm text-carbon/60">
-                Please enter your 6-digit password to authorize this action.
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <input
-                  type="password"
-                  maxLength={6}
-                  value={passwordInput}
-                  onChange={(e) => setPasswordInput(e.target.value.replace(/\D/g, ''))}
-                  placeholder="••••••"
-                  className="w-full bg-background border border-line-soft text-carbon text-center tracking-[0.5em] text-lg px-4 py-3 rounded-xl focus:outline-none focus:border-ink transition-colors"
-                />
-              </div>
-              {modalError && (
-                <div className="flex items-center gap-2 text-red-500 text-sm justify-center">
-                  <AlertCircle className="w-4 h-4" />
-                  <span>{modalError}</span>
-                </div>
-              )}
-              <button
-                onClick={confirmAction}
-                disabled={passwordInput.length !== 6}
-                className="w-full bg-ink text-white py-3 rounded-xl font-semibold transition-all hover:bg-ink-dark disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Confirm
+                <X className="w-5 h-5" />
               </button>
-            </div>
+              <div className="mb-6 text-center mt-2">
+                <div className="mx-auto w-12 h-12 bg-ink/10 rounded-full flex items-center justify-center mb-4">
+                  <Lock className="w-6 h-6 text-ink" />
+                </div>
+                <h3 className="text-xl font-display font-bold text-carbon mb-2 capitalize">
+                  Authenticate to {actionModal.actionType}
+                </h3>
+                <p className="text-sm text-carbon/60">
+                  Please enter your 6-digit password to authorize this action.
+                </p>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <input
+                    type="password"
+                    maxLength={6}
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value.replace(/\D/g, ""))}
+                    placeholder="••••••"
+                    className="w-full bg-background border border-line-soft text-carbon text-center tracking-[0.5em] text-lg px-4 py-3 rounded-xl focus:outline-none focus:border-ink transition-colors"
+                  />
+                </div>
+                {modalError && (
+                  <div className="flex items-center gap-2 text-red-500 text-sm justify-center">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>{modalError}</span>
+                  </div>
+                )}
+                <button
+                  onClick={confirmAction}
+                  disabled={passwordInput.length !== 6}
+                  className="w-full bg-ink text-white py-3 rounded-xl font-semibold transition-all hover:bg-ink-dark disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Confirm
+                </button>
+              </div>
             </motion.div>
           </div>
         )}
@@ -371,7 +376,7 @@ export default function ApiPage() {
       <AnimatePresence>
         {isCreateModalOpen && (
           <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -384,118 +389,118 @@ export default function ApiPage() {
                 setNewKeyPassword("");
               }}
             />
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.15, ease: "easeOut" }}
               className="bg-paper border border-line-soft rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-xl relative z-10 will-change-transform"
             >
-              <button 
+              <button
                 onClick={() => {
-                setIsCreateModalOpen(false);
-                setError("");
-                setNewKeyName("");
-                setNewKeyPassword("");
-              }} 
-              className="absolute top-6 right-6 text-carbon/40 hover:text-carbon transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div className="mb-8">
-              <h3 className="text-xl font-display font-bold text-carbon">Create New API Key</h3>
-              <p className="text-sm text-carbon/60 mt-1">Configure your access token for the XyphX ecosystem.</p>
-            </div>
-
-            <div className="grid gap-5 sm:grid-cols-2 items-start">
-              <div className="space-y-2">
-                <label htmlFor="key-name" className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">Key Label</label>
-                <input
-                  id="key-name"
-                  type="text"
-                  placeholder="e.g. Production Backend"
-                  value={newKeyName}
-                  onChange={(e) => setNewKeyName(e.target.value)}
-                  className="w-full bg-background border border-line-soft text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none focus:border-ink transition-colors"
-                />
+                  setIsCreateModalOpen(false);
+                  setError("");
+                  setNewKeyName("");
+                  setNewKeyPassword("");
+                }}
+                className="absolute top-6 right-6 text-carbon/40 hover:text-carbon transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              <div className="mb-8">
+                <h3 className="text-xl font-display font-bold text-carbon">Create New API Key</h3>
+                <p className="text-sm text-carbon/60 mt-1">Configure your access token for the XyphX ecosystem.</p>
               </div>
-              
-              <div className="space-y-2 relative z-20">
-                <label className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">Product</label>
-                <div className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                    className={`w-full text-left bg-background border text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none transition-all flex items-center justify-between ${
-                      isDropdownOpen ? 'border-ink shadow-[0_0_0_4px_rgba(95,0,183,0.1)]' : 'border-line-soft hover:border-carbon/30'
-                    }`}
-                  >
-                    <span className="font-medium">{products.find(p => p.id === newKeyProduct)?.name || 'Select Product'}</span>
-                    <ChevronDown className={`w-4 h-4 text-carbon/40 transition-transform duration-300 ${isDropdownOpen ? 'rotate-180 text-ink' : ''}`} />
-                  </button>
+
+              <div className="grid gap-5 sm:grid-cols-2 items-start">
+                <div className="space-y-2">
+                  <label htmlFor="key-name" className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">Key Label</label>
+                  <input
+                    id="key-name"
+                    type="text"
+                    placeholder="e.g. Production Backend"
+                    value={newKeyName}
+                    onChange={(e) => setNewKeyName(e.target.value)}
+                    className="w-full bg-background border border-line-soft text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none focus:border-ink transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-2 relative z-20">
+                  <label className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">Product</label>
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                      className={`w-full text-left bg-background border text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none transition-all flex items-center justify-between ${
+                        isDropdownOpen ? "border-ink shadow-[0_0_0_4px_rgba(95,0,183,0.1)]" : "border-line-soft hover:border-carbon/30"
+                      }`}
+                    >
+                      <span className="font-medium">{products.find((p) => p.id === newKeyProduct)?.name || "Select Product"}</span>
+                      <ChevronDown className={`w-4 h-4 text-carbon/40 transition-transform duration-300 ${isDropdownOpen ? "rotate-180 text-ink" : ""}`} />
+                    </button>
+
+                    {isDropdownOpen && (
+                      <div className="absolute z-30 top-full mt-2 w-full bg-paper border border-line-soft rounded-xl shadow-xl overflow-hidden py-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
+                        {products.map((p) => (
+                          <button
+                            key={p.id}
+                            type="button"
+                            onClick={() => {
+                              setNewKeyProduct(p.id);
+                              setIsDropdownOpen(false);
+                            }}
+                            className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between ${
+                              newKeyProduct === p.id
+                                ? "bg-ink/5 text-ink font-semibold"
+                                : "text-carbon/80 hover:bg-background hover:text-carbon"
+                            }`}
+                          >
+                            <span>{p.name}</span>
+                            {newKeyProduct === p.id && <Check className="w-4 h-4 text-ink" />}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {isDropdownOpen && (
-                    <div className="absolute z-30 top-full mt-2 w-full bg-paper border border-line-soft rounded-xl shadow-xl overflow-hidden py-1.5 animate-in fade-in slide-in-from-top-2 duration-200">
-                      {products.map(p => (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            setNewKeyProduct(p.id);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-3 text-sm transition-colors flex items-center justify-between ${
-                            newKeyProduct === p.id 
-                              ? 'bg-ink/5 text-ink font-semibold' 
-                              : 'text-carbon/80 hover:bg-background hover:text-carbon'
-                          }`}
-                        >
-                          <span>{p.name}</span>
-                          {newKeyProduct === p.id && <Check className="w-4 h-4 text-ink" />}
-                        </button>
-                      ))}
-                    </div>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsDropdownOpen(false)}
+                    />
                   )}
                 </div>
-                
-                {isDropdownOpen && (
-                  <div 
-                    className="fixed inset-0 z-10" 
-                    onClick={() => setIsDropdownOpen(false)}
+
+                <div className="space-y-2 sm:col-span-2">
+                  <label htmlFor="key-password" className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">6-Digit Security Password</label>
+                  <input
+                    id="key-password"
+                    type="password"
+                    maxLength={6}
+                    placeholder="Create a 6-digit pin (e.g. 123456)"
+                    value={newKeyPassword}
+                    onChange={(e) => setNewKeyPassword(e.target.value.replace(/\D/g, ""))}
+                    className="w-full bg-background border border-line-soft text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none focus:border-ink transition-colors"
                   />
-                )}
-              </div>
-
-              <div className="space-y-2 sm:col-span-2">
-                <label htmlFor="key-password" className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest block">6-Digit Security Password</label>
-                <input
-                  id="key-password"
-                  type="password"
-                  maxLength={6}
-                  placeholder="Create a 6-digit pin (e.g. 123456)"
-                  value={newKeyPassword}
-                  onChange={(e) => setNewKeyPassword(e.target.value.replace(/\D/g, ''))}
-                  className="w-full bg-background border border-line-soft text-carbon text-sm px-4 py-3.5 rounded-xl focus:outline-none focus:border-ink transition-colors"
-                />
-                <p className="text-xs text-carbon/40 mt-1.5">This password is required for viewing, copying, or deleting this key later.</p>
-              </div>
-
-              {error && (
-                <div className="sm:col-span-2 flex items-center gap-2 text-red-500 bg-red-500/10 p-4 rounded-xl text-sm border border-red-500/20">
-                  <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                  <span>{error}</span>
+                  <p className="text-xs text-carbon/40 mt-1.5">This password is required for viewing, copying, or deleting this key later.</p>
                 </div>
-              )}
 
-              <div className="sm:col-span-2 mt-4">
-                <button
-                  onClick={generateKey}
-                  className="w-full bg-ink text-white py-3.5 rounded-xl font-display font-semibold transition-all duration-300 hover:bg-ink-dark shadow-md shadow-ink/20 hover:shadow-lg hover:shadow-ink/30"
-                >
-                  Create API Key
-                </button>
+                {error && (
+                  <div className="sm:col-span-2 flex items-center gap-2 text-red-500 bg-red-500/10 p-4 rounded-xl text-sm border border-red-500/20">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                <div className="sm:col-span-2 mt-4">
+                  <button
+                    onClick={generateKey}
+                    className="w-full bg-ink text-white py-3.5 rounded-xl font-display font-semibold transition-all duration-300 hover:bg-ink-dark shadow-md shadow-ink/20 hover:shadow-lg hover:shadow-ink/30"
+                  >
+                    Create API Key
+                  </button>
+                </div>
               </div>
-            </div>
             </motion.div>
           </div>
         )}
@@ -552,14 +557,14 @@ export default function ApiPage() {
 
                             <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 self-end sm:self-center">
                               <button
-                                onClick={() => handleActionClick(k.id, 'view')}
+                                onClick={() => handleActionClick(k.id, "view")}
                                 title="Toggle Visibility"
                                 className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 border border-line-soft text-carbon/60 hover:text-carbon hover:bg-paper rounded-xl transition-all shadow-sm"
                               >
                                 {!k.visible ? <EyeOff className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" /> : <Eye className="h-[16px] w-[16px] sm:h-[18px] sm:w-[18px]" />}
                               </button>
                               <button
-                                onClick={() => handleActionClick(k.id, 'copy')}
+                                onClick={() => handleActionClick(k.id, "copy")}
                                 title="Copy API Key"
                                 className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 border border-line-soft text-carbon/60 hover:text-ink hover:bg-paper rounded-xl transition-all shadow-sm"
                               >
@@ -578,7 +583,7 @@ export default function ApiPage() {
                                 )}
                               </button>
                               <button
-                                onClick={() => handleActionClick(k.id, 'delete')}
+                                onClick={() => handleActionClick(k.id, "delete")}
                                 title="Revoke Token"
                                 className="flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 border border-line-soft text-carbon/40 hover:text-red-500 hover:bg-red-500/10 rounded-xl transition-all shadow-sm"
                               >
@@ -606,13 +611,13 @@ export default function ApiPage() {
                   {/* Profile Header */}
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 mb-6 text-center sm:text-left">
                     <div className="w-20 h-20 rounded-full overflow-hidden bg-background border border-line-soft shrink-0 shadow-inner">
-                      <img src={profile?.picture || user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || user?.displayName || 'User')}&background=5F00B7&color=fff&size=150`} alt="Profile" className="w-full h-full object-cover" />
+                      <img src={profile?.picture || user?.photoURL || `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.name || user?.displayName || "User")}&background=5F00B7&color=fff&size=150`} alt="Profile" className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-display text-xl font-bold text-carbon mb-1">{profile?.name || user?.displayName || 'User'}</h3>
+                      <h3 className="font-display text-xl font-bold text-carbon mb-1">{profile?.name || user?.displayName || "User"}</h3>
                       <div className="flex items-center justify-center sm:justify-start gap-2 text-carbon/60 text-sm">
                         <Mail className="w-3.5 h-3.5" />
-                        <span className="truncate">{profile?.email || user?.email || 'N/A'}</span>
+                        <span className="truncate">{profile?.email || user?.email || "N/A"}</span>
                       </div>
                       {!profile && (
                         <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-ink/5 border border-ink/10 text-ink text-[10px] font-bold tracking-widest uppercase shadow-sm">
@@ -622,38 +627,38 @@ export default function ApiPage() {
                     </div>
                   </div>
 
-                  {/* Connected Auth Providers (Full X-Axis Width) */}
+                  {/* Connected Auth Providers */}
                   <div className="space-y-3 mb-8 pb-8 border-b border-line-soft w-full">
-                    {['Google', 'Microsoft', 'Yahoo']
+                    {["Google", "Microsoft", "Yahoo"]
                       .sort((a, b) => {
-                        const aConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(a.toLowerCase());
-                        const bConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(b.toLowerCase());
+                        const aConnected = profile?.connectedProviders?.map((p) => p.toLowerCase()).includes(a.toLowerCase());
+                        const bConnected = profile?.connectedProviders?.map((p) => p.toLowerCase()).includes(b.toLowerCase());
                         if (aConnected === bConnected) return a.localeCompare(b);
                         return aConnected ? -1 : 1;
                       })
-                      .map(provider => {
-                      const isConnected = profile?.connectedProviders?.map(p => p.toLowerCase()).includes(provider.toLowerCase());
-                      return (
-                        <div key={provider} className="flex items-center justify-between p-3.5 rounded-xl border border-line-soft bg-paper/50 w-full">
-                          <div className="flex items-center gap-3">
-                            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-ink animate-pulse' : 'bg-carbon/20'}`}></div>
-                            <span className="text-sm font-medium text-carbon">{provider}</span>
+                      .map((provider) => {
+                        const isConnected = profile?.connectedProviders?.map((p) => p.toLowerCase()).includes(provider.toLowerCase());
+                        return (
+                          <div key={provider} className="flex items-center justify-between p-3.5 rounded-xl border border-line-soft bg-paper/50 w-full">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-2 h-2 rounded-full ${isConnected ? "bg-ink animate-pulse" : "bg-carbon/20"}`}></div>
+                              <span className="text-sm font-medium text-carbon">{provider}</span>
+                            </div>
+                            {isConnected ? (
+                              <span className="text-[10px] uppercase font-bold tracking-wider text-ink bg-ink/10 px-2.5 py-1 rounded-md">
+                                Connected
+                              </span>
+                            ) : (
+                              <a
+                                href={`${import.meta.env.VITE_API_URL || "http://localhost:8080"}/api/auth/${provider.toLowerCase()}`}
+                                className="text-[11px] uppercase font-bold tracking-wider text-carbon/60 hover:text-ink transition-colors px-3 py-1.5 border border-line-soft hover:border-ink/30 rounded-lg hover:bg-ink/5"
+                              >
+                                Connect
+                              </a>
+                            )}
                           </div>
-                          {isConnected ? (
-                            <span className="text-[10px] uppercase font-bold tracking-wider text-ink bg-ink/10 px-2.5 py-1 rounded-md">
-                              Connected
-                            </span>
-                          ) : (
-                            <a
-                              href={`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/auth/${provider.toLowerCase()}`}
-                              className="text-[11px] uppercase font-bold tracking-wider text-carbon/60 hover:text-ink transition-colors px-3 py-1.5 border border-line-soft hover:border-ink/30 rounded-lg hover:bg-ink/5"
-                            >
-                              Connect
-                            </a>
-                          )}
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
                   </div>
 
                   {/* Usage Stats */}
@@ -662,17 +667,21 @@ export default function ApiPage() {
                       <Activity className="h-4 w-4 text-carbon/50" />
                       <h4 className="text-[11px] font-semibold text-carbon/50 uppercase tracking-widest">API Usage Metrics</h4>
                     </div>
-                    
+
                     {/* Daily Usage */}
                     <div className="space-y-2.5">
                       <div className="flex justify-between items-end">
                         <span className="text-sm font-medium text-carbon">Daily Requests</span>
-                        <span className="text-[11px] font-mono text-carbon/60">{profile?.metrics?.dailyRequests.toLocaleString() || 0} <span className="text-carbon/30">/ {profile?.metrics?.dailyLimit.toLocaleString() || 5000}</span></span>
+                        <span className="text-[11px] font-mono text-carbon/60">
+                          {profile?.metrics?.dailyRequests?.toLocaleString() || 0}{" "}
+                          <span className="text-carbon/30">/ {profile?.metrics?.dailyLimit?.toLocaleString() || 5000}</span>
+                        </span>
                       </div>
                       <div className="h-2 w-full bg-background border border-line-soft rounded-full overflow-hidden">
-                        <div className="h-full bg-ink rounded-full relative overflow-hidden transition-all duration-1000 ease-out" style={{ width: `${calculatePercentage(profile?.metrics?.dailyRequests || 0, profile?.metrics?.dailyLimit || 5000)}%` }}>
-                           <div className="absolute inset-0 bg-white/20 w-full animate-[shimmer_2s_infinite]"></div>
-                        </div>
+                        <div
+                          className="h-full bg-ink rounded-full relative overflow-hidden transition-all duration-1000 ease-out"
+                          style={{ width: `${calculatePercentage(profile?.metrics?.dailyRequests, profile?.metrics?.dailyLimit)}%` }}
+                        />
                       </div>
                     </div>
 
@@ -680,10 +689,16 @@ export default function ApiPage() {
                     <div className="space-y-2.5">
                       <div className="flex justify-between items-end">
                         <span className="text-sm font-medium text-carbon">Weekly Requests</span>
-                        <span className="text-[11px] font-mono text-carbon/60">{profile?.metrics?.weeklyRequests.toLocaleString() || 0} <span className="text-carbon/30">/ {profile?.metrics?.weeklyLimit.toLocaleString() || 35000}</span></span>
+                        <span className="text-[11px] font-mono text-carbon/60">
+                          {profile?.metrics?.weeklyRequests?.toLocaleString() || 0}{" "}
+                          <span className="text-carbon/30">/ {profile?.metrics?.weeklyLimit?.toLocaleString() || 35000}</span>
+                        </span>
                       </div>
                       <div className="h-2 w-full bg-background border border-line-soft rounded-full overflow-hidden">
-                        <div className="h-full bg-ink/70 rounded-full transition-all duration-1000 ease-out delay-300" style={{ width: `${calculatePercentage(profile?.metrics?.weeklyRequests || 0, profile?.metrics?.weeklyLimit || 35000)}%` }}></div>
+                        <div
+                          className="h-full bg-ink rounded-full relative overflow-hidden transition-all duration-1000 ease-out"
+                          style={{ width: `${calculatePercentage(profile?.metrics?.weeklyRequests, profile?.metrics?.weeklyLimit)}%` }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -694,7 +709,7 @@ export default function ApiPage() {
         </div>
       </main>
 
-      <Footer showContact={false} />
+      <Footer />
     </div>
   );
 }

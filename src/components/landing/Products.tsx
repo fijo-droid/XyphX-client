@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence, useMotionValue, useSpring } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Reveal from "@/components/motion/Reveal";
 import { ArtAgents, ArtPortfolio, ArtSystem } from "@/components/art/LineArt";
+import { supabase } from "@/lib/supabase.ts";
 
 interface Product {
   id: string;
@@ -13,7 +14,38 @@ interface Product {
   logo: string;
 }
 
-/* each product owns a custom illustration */
+/* Fallback product list if Supabase query returns empty or while configuring DB */
+const DEFAULT_PRODUCTS: Product[] = [
+  {
+    id: "1",
+    name: "DotX",
+    description: "AI Agent infrastructure and orchestration framework.",
+    status: "Active",
+    rank: 1,
+    link: "#",
+    logo: "",
+  },
+  {
+    id: "2",
+    name: "ShowMySkills",
+    description: "Developer portfolio generator and talent index.",
+    status: "Active",
+    rank: 2,
+    link: "#",
+    logo: "",
+  },
+  {
+    id: "3",
+    name: "XyphX OS",
+    description: "Distributed system dashboard and edge monitoring.",
+    status: "Active",
+    rank: 3,
+    link: "#",
+    logo: "",
+  },
+];
+
+/* Each product owns a custom illustration */
 const artFor: Record<string, React.ComponentType<{ className?: string }>> = {
   DotX: ArtAgents,
   ShowMySkills: ArtPortfolio,
@@ -21,37 +53,41 @@ const artFor: Record<string, React.ComponentType<{ className?: string }>> = {
 };
 
 export default function Products() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(DEFAULT_PRODUCTS);
   const [hovered, setHovered] = useState<string | null>(null);
-
-  // illustration panel removed per request
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/public/products`);
-        if (response.ok) {
-          const data = await response.json();
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .order("rank", { ascending: true });
+
+        if (error) {
+          console.warn("Supabase products fetch warning (using defaults):", error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
           const dynamicProducts: Product[] = data.map((item: any, index: number) => ({
-            id: item.id || String(index + 1),
-            name: item.name,
+            id: String(item.id || index + 1),
+            name: item.name || "Untitled Product",
             description: item.description || "No description provided.",
-            status: "Active",
-            rank: index + 1,
+            status: item.status || "Active",
+            rank: item.rank || index + 1,
             link: item.link || "#",
-            logo: "",
+            logo: item.logo || "",
           }));
           setProducts(dynamicProducts);
         }
       } catch (error) {
-        console.error("Failed to fetch products:", error);
+        console.error("Failed to fetch products from Supabase:", error);
       }
     };
 
     fetchProducts();
   }, []);
-
-  // hover art removed
 
   return (
     <section id="products" className="relative z-10 px-6 md:px-10 py-32 md:py-40">
@@ -59,7 +95,9 @@ export default function Products() {
         <Reveal blur={false}>
           <div className="mb-4 flex items-end justify-between border-b border-line pb-4">
             <p className="label-mono text-ink">02 — Products</p>
-            <p className="label-mono hidden sm:block text-carbon/40">{products.length} entries · ranked</p>
+            <p className="label-mono hidden sm:block text-carbon/40">
+              {products.length} entries · ranked
+            </p>
           </div>
         </Reveal>
 
@@ -69,7 +107,7 @@ export default function Products() {
           </h2>
         </Reveal>
 
-        {/* the index — full-width editorial rows */}
+        {/* The index — full-width editorial rows */}
         <div onMouseLeave={() => setHovered(null)}>
           {products
             .sort((a, b) => a.rank - b.rank)
@@ -83,7 +121,7 @@ export default function Products() {
                   onMouseEnter={() => setHovered(product.name)}
                   className="group relative block overflow-hidden border-b border-line first:border-t"
                 >
-                  {/* ink flood on hover */}
+                  {/* Ink flood on hover */}
                   <span
                     aria-hidden
                     className="absolute inset-0 origin-top scale-y-0 bg-ink transition-transform duration-500 ease-[cubic-bezier(0.65,0,0.35,1)] group-hover:scale-y-100"
@@ -121,8 +159,6 @@ export default function Products() {
             ))}
         </div>
       </div>
-
-      {/* cursor-following illustration panel removed */}
     </section>
   );
 }

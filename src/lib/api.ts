@@ -13,24 +13,29 @@ interface RequestOptions extends RequestInit {
 }
 
 // 1. Core request function separated from object wrapper
-async function sendRequest<T>(
+async function sendRequest<T = any>(
   endpoint: string,
   options: RequestOptions = {},
   isRetry = false
-): Promise<Response> {
-  const url = `${API_BASE_URL}${endpoint}`;
+): Promise<T> {
+  const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
 
-  const headers = new Headers(options.headers || {});
+  const headers = new Headers(options.headers);
 
-  // Attach token from Redux
+  // Auto-attach Authorization header from Redux state if available
   const state = store.getState();
-  const token = state.auth.accessToken;
-  if (token) {
+  const token = state.auth?.accessToken;
+  if (token && !headers.has('Authorization')) {
     headers.set('Authorization', `Bearer ${token}`);
   }
 
   // Handle Content-Type dynamically for JSON vs FormData
-  if (!headers.has('Content-Type') && options.body && !(options.body instanceof FormData) && typeof options.body === 'string') {
+  if (
+    !headers.has('Content-Type') &&
+    options.body &&
+    !(options.body instanceof FormData) &&
+    typeof options.body === 'string'
+  ) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -47,7 +52,7 @@ async function sendRequest<T>(
     try {
       const refreshResponse = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
       });
 
       if (refreshResponse.ok) {
@@ -60,47 +65,68 @@ async function sendRequest<T>(
         const retryHeaders = new Headers(headers);
         retryHeaders.set('Authorization', `Bearer ${data.accessToken}`);
 
-        // FIX: Calls sendRequest directly without 'this' scoping issues
+        // Retry original request
         return sendRequest<T>(endpoint, { ...options, headers: retryHeaders }, true);
       } else {
         store.dispatch(logout());
         window.location.href = '/login';
+        throw new Error('Session expired');
       }
     } catch (err) {
       store.dispatch(logout());
       window.location.href = '/login';
+      throw err;
     }
   }
 
-  return response;
+  // Safely parse JSON or handle Non-OK status responses to prevent HTML parsing errors
+  const contentType = response.headers.get('content-type');
+  const isJson = contentType && contentType.includes('application/json');
+
+  if (!response.ok) {
+    if (isJson) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || `API error: ${response.status}`);
+    } else {
+      throw new Error(
+        `Server returned ${response.status} ${response.statusText}. Check backend server route.`
+      );
+    }
+  }
+
+  if (isJson) {
+    return (await response.json()) as T;
+  }
+
+  return {} as T;
 }
 
 export const api = {
   request: sendRequest,
 
-  get(endpoint: string, options: RequestOptions = {}) {
-    return sendRequest(endpoint, { ...options, method: 'GET' });
+  get<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    return sendRequest<T>(endpoint, { ...options, method: 'GET' });
   },
 
-  post(endpoint: string, body: any, options: RequestOptions = {}) {
+  post<T = any>(endpoint: string, body?: any, options: RequestOptions = {}): Promise<T> {
     const isFormData = body instanceof FormData;
-    return sendRequest(endpoint, {
+    return sendRequest<T>(endpoint, {
       ...options,
       method: 'POST',
       body: isFormData ? body : JSON.stringify(body),
     });
   },
 
-  put(endpoint: string, body: any, options: RequestOptions = {}) {
+  put<T = any>(endpoint: string, body?: any, options: RequestOptions = {}): Promise<T> {
     const isFormData = body instanceof FormData;
-    return sendRequest(endpoint, {
+    return sendRequest<T>(endpoint, {
       ...options,
       method: 'PUT',
       body: isFormData ? body : JSON.stringify(body),
     });
   },
 
-  delete(endpoint: string, options: RequestOptions = {}) {
-    return sendRequest(endpoint, { ...options, method: 'DELETE' });
-  }
+  delete<T = any>(endpoint: string, options: RequestOptions = {}): Promise<T> {
+    return sendRequest<T>(endpoint, { ...options, method: 'DELETE' });
+  },
 };

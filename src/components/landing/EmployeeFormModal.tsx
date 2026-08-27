@@ -39,6 +39,18 @@ export default function EmployeeFormModal({
   const [errorMsg, setErrorMsg] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Lock background scroll when modal is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     if (!isOpen) return;
     if (initialData) {
@@ -91,7 +103,6 @@ export default function EmployeeFormModal({
     setErrorMsg("");
 
     try {
-      // Upload photo if a new file was selected
       let photoUrl = existingPhotoUrl;
       if (photoFile) {
         photoUrl = await uploadTeamPhoto(photoFile);
@@ -130,7 +141,8 @@ export default function EmployeeFormModal({
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+        <div className="fixed inset-0 z-[85] flex items-center justify-center p-4 sm:p-6">
+          {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -139,16 +151,17 @@ export default function EmployeeFormModal({
             className="fixed inset-0 bg-[#0A0014]/80 backdrop-blur-md"
           />
 
+          {/* Modal Container */}
           <motion.div
             initial={{ opacity: 0, scale: 0.94, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.94, y: 20 }}
             transition={{ duration: 0.35, ease: [0.21, 0.6, 0.35, 1] }}
-            className="relative z-10 w-full max-w-2xl overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl my-auto text-carbon"
+            className="relative z-10 flex flex-col w-full max-w-2xl max-h-[90vh] overflow-hidden rounded-3xl border border-line bg-paper shadow-2xl text-carbon"
             onClick={e => e.stopPropagation()}
           >
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-line px-6 py-5">
+            {/* Header (Fixed) */}
+            <div className="flex items-center justify-between border-b border-line px-6 py-5 shrink-0">
               <div className="flex items-center gap-3">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-ink text-white">
                   <Sparkles className="h-4 w-4" />
@@ -157,7 +170,7 @@ export default function EmployeeFormModal({
                   <h3 className="font-display text-xl font-bold tracking-tight text-carbon">
                     {initialData ? "Edit Employee Profile" : "Add New Employee"}
                   </h3>
-                  <p className="label-mono text-ink/70">HR Authorized • Supabase Synced</p>
+                  <p className="label-mono text-ink/70">HR Authorized</p>
                 </div>
               </div>
               <button
@@ -169,142 +182,146 @@ export default function EmployeeFormModal({
             </div>
 
             {/* Form */}
-            <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6 max-h-[78vh] overflow-y-auto">
-              {errorMsg && (
-                <div className="flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600">
-                  <AlertCircle className="h-5 w-5 shrink-0" />
-                  <span>{errorMsg}</span>
-                </div>
-              )}
-
-              {/* Photo Upload */}
-              <div className="rounded-2xl border border-line bg-muted/40 p-5">
-                <label className="label-mono text-carbon/50 block mb-3">
-                  Employee Photo (uploaded to Supabase Storage)
-                </label>
-                <div className="flex flex-col sm:flex-row items-center gap-6">
-                  {/* Preview */}
-                  <div className="relative h-28 w-24 shrink-0 rounded-xl overflow-hidden border border-line bg-muted shadow-sm">
-                    {photoPreview ? (
-                      <img
-                        src={photoPreview}
-                        alt="Preview"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-carbon/30">
-                        <ImageIcon className="h-8 w-8" />
-                        <span className="text-[10px] font-mono">No photo</span>
-                      </div>
-                    )}
+            <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Content (DATA-LENIS-PREVENT ADDED HERE) */}
+              <div 
+                data-lenis-prevent
+                className="flex-1 overflow-y-auto overscroll-contain p-6 sm:p-8 space-y-6"
+              >
+                {errorMsg && (
+                  <div className="flex items-center gap-3 rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-sm text-red-600">
+                    <AlertCircle className="h-5 w-5 shrink-0" />
+                    <span>{errorMsg}</span>
                   </div>
+                )}
 
-                  {/* Upload button */}
-                  <div className="flex-1 w-full">
-                    <label className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-xl border border-dashed border-ink/40 bg-ink-soft px-4 py-4 text-sm font-medium text-ink hover:border-ink hover:bg-ink/10 transition-colors">
-                      <Upload className="h-4 w-4" />
-                      <span>
-                        {photoFile
-                          ? `Selected: ${photoFile.name}`
-                          : existingPhotoUrl
-                            ? "Replace photo"
-                            : "Upload employee photo (PNG, JPG, WebP · max 8 MB)"}
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleFileSelect}
-                        className="hidden"
-                      />
-                    </label>
-                    <p className="mt-2 text-[11px] text-carbon/40 font-mono">
-                      Photo is stored securely in Supabase Storage and displayed publicly.
-                    </p>
+                {/* Photo Upload */}
+                <div className="rounded-2xl border border-line bg-muted/40 p-5">
+                  <label className="label-mono text-carbon/50 block mb-3">
+                    Employee Photo
+                  </label>
+                  <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div className="relative h-28 w-24 shrink-0 rounded-xl overflow-hidden border border-line bg-muted shadow-sm">
+                      {photoPreview ? (
+                        <img
+                          src={photoPreview}
+                          alt="Preview"
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-carbon/30">
+                          <ImageIcon className="h-8 w-8" />
+                          <span className="text-[10px] font-mono">No photo</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 w-full">
+                      <label className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-xl border border-dashed border-ink/40 bg-ink-soft px-4 py-4 text-sm font-medium text-ink hover:border-ink hover:bg-ink/10 transition-colors">
+                        <Upload className="h-4 w-4" />
+                        <span>
+                          {photoFile
+                            ? `Selected: ${photoFile.name}`
+                            : existingPhotoUrl
+                              ? "Replace photo"
+                              : "Upload employee photo (PNG, JPG, WebP · max 8 MB)"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleFileSelect}
+                          className="hidden"
+                        />
+                      </label>
+                      <p className="mt-2 text-[11px] text-carbon/40 font-mono">
+                        Photo is securely stored and displayed publicly.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Core Fields */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Full Name *</label>
-                  <input type="text" required placeholder="e.g. John Doe" value={name} onChange={e => setName(e.target.value)}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
-                </div>
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Role / Job Title *</label>
-                  <input type="text" required placeholder="e.g. Lead AI Architect" value={role} onChange={e => setRole(e.target.value)}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
-                </div>
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Department *</label>
-                  <select value={department} onChange={e => setDepartment(e.target.value as Employee["department"])}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink">
-                    <option value="Leadership">Leadership</option>
-                    <option value="AI & Research">AI & Research</option>
-                    <option value="Engineering">Engineering</option>
-                    <option value="Design & UX">Design & UX</option>
-                    <option value="People & Ops">People & Ops (HR)</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Employee ID</label>
-                  <input type="text" placeholder="XYPHX-007" value={employeeIdVal} onChange={e => setEmployeeIdVal(e.target.value)}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
-                </div>
-              </div>
-
-              {/* Bio */}
-              <div>
-                <label className="label-mono text-carbon/50 block mb-1.5">Bio & Role Overview *</label>
-                <textarea required rows={3} placeholder="Describe the employee's background, responsibilities, and contributions..."
-                  value={bio} onChange={e => setBio(e.target.value)}
-                  className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink leading-relaxed" />
-              </div>
-
-              {/* Skills & Projects */}
-              <div className="grid sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Skills (comma separated)</label>
-                  <input type="text" placeholder="PyTorch, React, Go, System Design" value={skillsInput} onChange={e => setSkillsInput(e.target.value)}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
-                </div>
-                <div>
-                  <label className="label-mono text-carbon/50 block mb-1.5">Key Projects (comma separated)</label>
-                  <input type="text" placeholder="DotX Agents, ShowMySkills, XyphX OS" value={projectsInput} onChange={e => setProjectsInput(e.target.value)}
-                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
-                </div>
-              </div>
-
-              {/* Contact */}
-              <div className="border-t border-line pt-5 space-y-4">
-                <p className="label-mono text-carbon/40">Contact & Social</p>
+                {/* Core Fields */}
                 <div className="grid sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-xs font-mono text-carbon/60 block mb-1">Corporate Email *</label>
-                    <input type="email" required placeholder="name@xyphx.com" value={email} onChange={e => setEmail(e.target.value)}
+                    <label className="label-mono text-carbon/50 block mb-1.5">Full Name *</label>
+                    <input type="text" required placeholder="e.g. John Doe" value={name} onChange={e => setName(e.target.value)}
                       className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
                   </div>
                   <div>
-                    <label className="text-xs font-mono text-carbon/60 block mb-1">LinkedIn URL</label>
-                    <input type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)}
+                    <label className="label-mono text-carbon/50 block mb-1.5">Role / Job Title *</label>
+                    <input type="text" required placeholder="e.g. Lead AI Architect" value={role} onChange={e => setRole(e.target.value)}
                       className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
                   </div>
                   <div>
-                    <label className="text-xs font-mono text-carbon/60 block mb-1">GitHub URL</label>
-                    <input type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)}
+                    <label className="label-mono text-carbon/50 block mb-1.5">Department *</label>
+                    <select value={department} onChange={e => setDepartment(e.target.value as Employee["department"])}
+                      className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink">
+                      <option value="Leadership">Leadership</option>
+                      <option value="AI & Research">AI & Research</option>
+                      <option value="Engineering">Engineering</option>
+                      <option value="Design & UX">Design & UX</option>
+                      <option value="People & Ops">People & Ops (HR)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label-mono text-carbon/50 block mb-1.5">Employee ID</label>
+                    <input type="text" placeholder="XYPHX-007" value={employeeIdVal} onChange={e => setEmployeeIdVal(e.target.value)}
+                      className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                  </div>
+                </div>
+
+                {/* Bio */}
+                <div>
+                  <label className="label-mono text-carbon/50 block mb-1.5">Bio & Role Overview *</label>
+                  <textarea required rows={3} placeholder="Describe the employee's background, responsibilities, and contributions..."
+                    value={bio} onChange={e => setBio(e.target.value)}
+                    className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink leading-relaxed" />
+                </div>
+
+                {/* Skills & Projects */}
+                <div className="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="label-mono text-carbon/50 block mb-1.5">Skills (comma separated)</label>
+                    <input type="text" placeholder="PyTorch, React, Go, System Design" value={skillsInput} onChange={e => setSkillsInput(e.target.value)}
                       className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
                   </div>
                   <div>
-                    <label className="text-xs font-mono text-carbon/60 block mb-1">Joined Date</label>
-                    <input type="text" placeholder="e.g. Jan 2026" value={joinedDate} onChange={e => setJoinedDate(e.target.value)}
+                    <label className="label-mono text-carbon/50 block mb-1.5">Key Projects (comma separated)</label>
+                    <input type="text" placeholder="DotX Agents, ShowMySkills, XyphX OS" value={projectsInput} onChange={e => setProjectsInput(e.target.value)}
                       className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                  </div>
+                </div>
+
+                {/* Contact */}
+                <div className="border-t border-line pt-5 space-y-4">
+                  <p className="label-mono text-carbon/40">Contact & Social</p>
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-mono text-carbon/60 block mb-1">Corporate Email *</label>
+                      <input type="email" required placeholder="name@xyphx.com" value={email} onChange={e => setEmail(e.target.value)}
+                        className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-mono text-carbon/60 block mb-1">LinkedIn URL</label>
+                      <input type="url" placeholder="https://linkedin.com/in/username" value={linkedin} onChange={e => setLinkedin(e.target.value)}
+                        className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-mono text-carbon/60 block mb-1">GitHub URL</label>
+                      <input type="url" placeholder="https://github.com/username" value={github} onChange={e => setGithub(e.target.value)}
+                        className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                    </div>
+                    <div>
+                      <label className="text-xs font-mono text-carbon/60 block mb-1">Joined Date</label>
+                      <input type="text" placeholder="e.g. Jan 2026" value={joinedDate} onChange={e => setJoinedDate(e.target.value)}
+                        className="w-full rounded-xl border border-line bg-paper px-4 py-2.5 text-sm text-carbon placeholder:text-carbon/30 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink" />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Actions */}
-              <div className="flex items-center justify-end gap-3 border-t border-line pt-5">
+              {/* Actions Footer (Fixed at Bottom) */}
+              <div className="flex items-center justify-end gap-3 border-t border-line p-5 shrink-0 bg-paper">
                 <button type="button" onClick={onClose} disabled={submitting}
                   className="rounded-full border border-line bg-paper px-6 py-2.5 text-sm font-medium text-carbon/70 hover:bg-muted transition-colors disabled:opacity-50">
                   Cancel

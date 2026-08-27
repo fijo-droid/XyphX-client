@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import Reveal from "@/components/motion/Reveal";
+import { supabase } from "@/lib/supabase.ts";
 
 interface Sponsor {
   id: string;
@@ -9,33 +10,66 @@ interface Sponsor {
   websiteUrl?: string;
 }
 
+/* Fallback sponsors if Supabase is empty or fetching fails */
+const DEFAULT_SPONSORS: Sponsor[] = [
+  {
+    id: "1",
+    name: "Sponsor One",
+    logoUrl: "https://via.placeholder.com/150x60?text=Sponsor+1",
+    websiteUrl: "https://example.com",
+  },
+  {
+    id: "2",
+    name: "Sponsor Two",
+    logoUrl: "https://via.placeholder.com/150x60?text=Sponsor+2",
+    websiteUrl: "https://example.com",
+  },
+  {
+    id: "3",
+    name: "Sponsor Three",
+    logoUrl: "https://via.placeholder.com/150x60?text=Sponsor+3",
+    websiteUrl: "https://example.com",
+  },
+];
+
 /**
  * Sponsor ticker — a tilted strip of type running across the field,
  * like tape across a drawing board. Pauses on hover.
  */
 const Sponsors: React.FC = () => {
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>(DEFAULT_SPONSORS);
 
   useEffect(() => {
     const fetchSponsors = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/public/sponsors`);
-        if (response.ok) {
-          const data = await response.json();
-          setSponsors(data);
+        // Query Supabase table 'sponsors' directly
+        const { data, error } = await supabase.from("sponsors").select("*");
+
+        if (error) {
+          console.warn("Supabase sponsors fetch warning (using defaults):", error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const formattedSponsors: Sponsor[] = data.map((item: any, index: number) => ({
+            id: String(item.id || index + 1),
+            name: item.name || `Sponsor ${index + 1}`,
+            logoUrl: item.logoUrl || item.logo_url || "",
+            websiteUrl: item.websiteUrl || item.website_url || "#",
+          }));
+          setSponsors(formattedSponsors);
         }
       } catch (error) {
-        console.error("Failed to fetch sponsors", error);
+        console.error("Failed to fetch sponsors from Supabase:", error);
       }
     };
-    
+
     fetchSponsors();
   }, []);
 
   if (sponsors.length === 0) return null;
 
-  // Duplicate the sponsors multiple times to ensure the marquee fills the screen even on ultrawide monitors
-  // and creates a seamless loop when translated by -50%.
+  // Duplicate the sponsors multiple times to ensure continuous marquee scrolling
   const duplicated = Array.from({ length: 40 }).flatMap(() => sponsors);
 
   return (

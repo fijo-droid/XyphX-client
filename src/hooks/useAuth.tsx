@@ -1,46 +1,58 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../store/store";
-import { setCredentials, logout as reduxLogout, setInitialized } from "../store/authSlice";
+import {
+  setCredentials,
+  logout as reduxLogout,
+  setInitialized,
+  setHRMode as reduxSetHRMode,
+} from "../store/authSlice";
 import { api } from "../lib/api";
-
+import { supabase } from "@/lib/supabase.ts"
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const dispatch = useDispatch();
 
   const fetchUser = async () => {
     try {
-      // First, try to refresh token (this will get the access token from the cookie and put it in Redux)
-      // Since it's the initial load, we assume the user might have a valid refresh cookie
-      const refreshResponse = await api.post("/api/auth/refresh", {});
-      if (refreshResponse.ok) {
-        const refreshData = await refreshResponse.json();
-        dispatch(setCredentials({ accessToken: refreshData.accessToken }));
-      }
+      // 1. Check native Supabase Auth session first
+      const { data: { session } } = await supabase.auth.getSession();
 
-      // Then fetch the user profile using the new enterprise API client
-      const response = await api.get("/api/users/me");
-
-      if (response.ok) {
-        const data = await response.json();
-        // Assume backend returns id, email, name, picture
+      if (session?.user) {
+        // Hydrate Redux state using Supabase user details directly
         dispatch(
           setCredentials({
-            accessToken: store.getState().auth.accessToken || '',
+            accessToken: session.access_token,
+            user: {
+              uid: session.user.id,
+              email: session.user.email || "",
+              displayName: session.user.user_metadata?.full_name || session.user.email,
+              photoURL: session.user.user_metadata?.avatar_url || "",
+            },
+            isAdmin: session.user.app_metadata?.role === "ROLE_ADMIN",
+            isHR: session.user.app_metadata?.role === "ROLE_HR",
+          })
+        );
+      } else {
+        // 2. Fallback to API endpoint if running custom backend
+        // Note: api.get directly returns the parsed JSON data
+        const data = await api.get("/api/users/me");
+
+        dispatch(
+          setCredentials({
+            accessToken: data.accessToken || "",
             user: {
               uid: data.id,
               email: data.email,
               displayName: data.name,
               photoURL: data.picture,
             },
-            isAdmin: data.role === 'ROLE_ADMIN',
-            isHR: data.role === 'ROLE_ADMIN' || data.role === 'ROLE_HR' || store.getState().auth.isHR,
+            isAdmin: data.role === "ROLE_ADMIN",
+            isHR: data.role === "ROLE_ADMIN" || data.role === "ROLE_HR",
           })
         );
-      } else {
-        dispatch(reduxLogout());
       }
     } catch (error) {
-      console.error("Failed to fetch user profile:", error);
+      console.warn("No active session found:", error);
       dispatch(reduxLogout());
     } finally {
       dispatch(setInitialized());
@@ -54,10 +66,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   return <>{children}</>;
 };
 
-import { store } from "../store/store";
-import { setHRMode as reduxSetHRMode } from "../store/authSlice";
-
-export const HR_PASSKEY_DEFAULT = "xyphx-hr-2026";
+export const HR_PASSKEY_DEFAULT = "fijopanto@007";
 
 export const useAuth = () => {
   const authState = useSelector((state: RootState) => state.auth);
@@ -71,7 +80,8 @@ export const useAuth = () => {
   const logout = async () => {
     try {
       setLocalLoading(true);
-      await api.post("/api/auth/logout", {});
+      // Sign out from Supabase Auth directly
+      await supabase.auth.signOut();
       dispatch(reduxLogout());
     } catch (error) {
       console.error("Logout failed:", error);
@@ -84,9 +94,12 @@ export const useAuth = () => {
     dispatch(reduxSetHRMode(enabled));
   };
 
-  const verifyHRAccess = (passkey: string): boolean => {
-    if (passkey.trim() === HR_PASSKEY_DEFAULT || passkey.trim() === "xyphx@admin2026") {
+  const verifyHRAccess = (inputPasskey: string): boolean => {
+    const validPasskey = import.meta.env.VITE_HR_PASSKEY || HR_PASSKEY_DEFAULT;
+
+    if (inputPasskey.trim() === validPasskey) {
       dispatch(reduxSetHRMode(true));
+      localStorage.setItem("isHRMode", "true");
       return true;
     }
     return false;
@@ -103,4 +116,3 @@ export const useAuth = () => {
     verifyHRAccess,
   };
 };
-
